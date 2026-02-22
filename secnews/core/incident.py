@@ -95,14 +95,22 @@ _CAUSE_PATTERNS: list[tuple[str, str]] = [
 # ── Fix status patterns ────────────────────────────────────────────────────────
 
 _FIXED_TRUE = re.compile(
-    r"patch(?:ed|es|ing)|fix(?:ed|es)|update(?:d|s) available|remediat(?:ed|ion)|"
-    r"mitigat(?:ed|ion)|resolved|workaround available|upgrade to|upgrade available|"
-    r"version \d[\d\.]+ (?:addresses|fixes|resolves)|security advisory",
+    r"patch(?:ed|es|ing)(?!\s+not|\s+unavailable)|"
+    r"(?<!no\s)(?<!not\s)patch(?:\s+is)?\s+available|"
+    r"fix(?:ed|es)(?!\s+not|\s+unavailable)|"
+    r"(?<!no\s)(?<!not\s)fix\s+(?:is\s+)?available|"
+    r"update(?:d|s)?\s+available|remediat(?:ed|ion)|"
+    r"mitigat(?:ed|ion)|workaround available|upgrade to|upgrade available|"
+    r"version \d[\d\.]+ (?:addresses|fixes|resolves)|security advisory|"
+    r"has been (?:fixed|patched|resolved)|released a (?:fix|patch|update)|"
+    r"required patch by|patch required by",
     re.IGNORECASE,
 )
 _FIXED_FALSE = re.compile(
-    r"no patch|unpatched|no fix|not yet patched|actively exploited|"
-    r"zero.?day|under investigation|ongoing|still vulnerable|no workaround",
+    r"no patch available|no fix available|not yet patched|"
+    r"no workaround|still vulnerable|no available (?:fix|patch)|"
+    r"patch not (?:yet )?available|has not (?:been )?patched|"
+    r"\bunpatched\b",
     re.IGNORECASE,
 )
 
@@ -190,12 +198,21 @@ def extract_incident(title: str, description: str) -> IncidentDetail:
     impact = _extract_impact(combined)
     root_cause = _first_match(_CAUSE_PATTERNS, combined) or "Under investigation"
 
-    # Fix status
-    is_fixed: Optional[bool] = None
-    if _FIXED_TRUE.search(combined):
+    # Fix status — check both signals; explicit "patch available" wins over
+    # "actively exploited" because a vuln can be both exploited AND patched.
+    has_fix_signal = bool(_FIXED_TRUE.search(combined))
+    has_no_fix_signal = bool(_FIXED_FALSE.search(combined))
+
+    if has_fix_signal and not has_no_fix_signal:
         is_fixed = True
-    if _FIXED_FALSE.search(combined):
-        is_fixed = False  # "not fixed" overrides "patch available" in text
+    elif has_no_fix_signal and not has_fix_signal:
+        is_fixed = False
+    elif has_fix_signal and has_no_fix_signal:
+        # Both present — "patch available" takes precedence
+        # (e.g. CISA KEV: "actively exploited. Patch is available.")
+        is_fixed = True
+    else:
+        is_fixed = None
 
     return IncidentDetail(
         incident_type=incident_type,

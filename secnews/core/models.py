@@ -6,7 +6,10 @@ import hashlib
 import re
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
+
+if TYPE_CHECKING:
+    from secnews.core.incident import IncidentDetail
 
 
 @dataclass
@@ -26,6 +29,7 @@ class NewsItem:
     hn_points: int = 0
     score: float = 0.0
     duplicate_sources: list[str] = field(default_factory=list)
+    incident: Optional["IncidentDetail"] = field(default=None, repr=False)
 
     @property
     def fingerprint(self) -> str:

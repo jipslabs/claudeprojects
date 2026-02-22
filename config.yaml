@@ -98,6 +98,49 @@ sources:
       tier: 3
       enabled: true
 
+  # Incident-focused sources — breach disclosures, attack reports, post-mortems
+  incidents:
+    - name: BleepingComputer (Incidents)
+      type: rss
+      url: https://www.bleepingcomputer.com/feed/
+      tier: 1
+      enabled: true
+    - name: DataBreaches.net
+      type: rss
+      url: https://www.databreaches.net/feed/
+      tier: 1
+      enabled: true
+    - name: The Hacker News (Incidents)
+      type: rss
+      url: https://feeds.feedburner.com/TheHackersNews
+      tier: 1
+      enabled: true
+    - name: SecurityWeek (Incidents)
+      type: rss
+      url: https://feeds.feedburner.com/securityweek
+      tier: 1
+      enabled: true
+    - name: Recorded Future News
+      type: rss
+      url: https://therecord.media/feed
+      tier: 1
+      enabled: true
+    - name: KrebsOnSecurity (Incidents)
+      type: rss
+      url: https://krebsonsecurity.com/feed/
+      tier: 1
+      enabled: true
+    - name: CyberScoop
+      type: rss
+      url: https://cyberscoop.com/feed/
+      tier: 2
+      enabled: true
+    - name: SC Media
+      type: rss
+      url: https://www.scmagazine.com/feed
+      tier: 2
+      enabled: true
+
 # Watchlist keywords: items matching these get a score boost
 watchlist:
   - ransomware

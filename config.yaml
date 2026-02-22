@@ -57,7 +57,7 @@ sources:
       enabled: true
     - name: Google Project Zero
       type: rss
-      url: https://feeds.feedburner.com/GoogleProjectZeroResearch
+      url: https://projectzero.google/feed.xml
       tier: 1
       enabled: true
     - name: US-CERT CISA Alerts

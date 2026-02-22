@@ -70,13 +70,21 @@ def _build_incident_panel(item: NewsItem, idx: int, ai_mode: bool = False) -> Pa
     icon = _TYPE_ICONS.get(inc.incident_type, "⚠")
     fixed_label, fixed_style = _FIXED_STYLE[inc.is_fixed]
 
+    # Determine per-item enrichment badge
+    item_ai_enriched = getattr(item, "ai_enriched", None)
+
     # Panel title line
     title_text = Text()
     title_text.append(f" #{idx}  ", style="bold white on dark_blue")
     title_text.append(f" {icon} {inc.incident_type}  ", style="bold cyan")
     title_text.append(f"Score: {item.score:.0f}", style=_score_style(item.score))
     if ai_mode:
-        title_text.append("  ✦ AI", style="bold magenta")
+        if item_ai_enriched is True:
+            title_text.append("  ✦ AI", style="bold magenta")
+        elif item_ai_enriched is False:
+            title_text.append("  ~ heuristic", style="dim yellow")
+        else:
+            title_text.append("  ✦ AI", style="bold magenta")
     title_text.append(f"  {_format_age(item)}", style="dim")
 
     # Build the structured table
@@ -125,8 +133,8 @@ def _build_incident_panel(item: NewsItem, idx: int, ai_mode: bool = False) -> Pa
         Text(fixed_label, style=fixed_style),
     )
 
-    # 6. AI analyst rationale (only in AI mode)
-    if ai_mode and inc.severity_rationale:
+    # 6. AI analyst rationale (only in AI mode and item was actually AI-enriched)
+    if ai_mode and item_ai_enriched is not False and inc.severity_rationale:
         table.add_row(
             "AI Analysis",
             Text(inc.severity_rationale, style="italic magenta"),
@@ -181,7 +189,9 @@ def print_legend(ai_mode: bool = False) -> None:
     legend.append(" = Fix status unknown", style="dim")
     if ai_mode:
         legend.append("   ✦ AI", style="bold magenta")
-        legend.append(" = Claude-extracted fields", style="dim")
+        legend.append(" = Claude-extracted fields  ", style="dim")
+        legend.append("~ heuristic", style="dim yellow")
+        legend.append(" = API fallback (regex-extracted)", style="dim")
     console.print(legend)
     console.print()
 
@@ -192,6 +202,7 @@ def print_incidents_digest(
     total_raw: int,
     source_names: list[str],
     ai_mode: bool = False,
+    enrichment_stats=None,
 ) -> None:
     """Render the full incident digest."""
     print_incidents_header(days, len(items), len(source_names), ai_mode=ai_mode)
@@ -208,7 +219,23 @@ def print_incidents_digest(
         console.print()
 
     console.print(Rule(style="dim"))
-    ai_note = "  ✦ Fields extracted by Claude Haiku  |  " if ai_mode else "  "
+
+    # Build footer with AI stats if available
+    if ai_mode and enrichment_stats is not None:
+        ai_note = (
+            f"  [bold magenta]✦ AI[/bold magenta] [dim]{enrichment_stats.ai_success} extracted by Claude"
+            + (
+                f"  ·  [dim yellow]~ {enrichment_stats.heuristic_fallback} heuristic fallback[/dim yellow]"
+                if enrichment_stats.heuristic_fallback > 0
+                else ""
+            )
+            + "[/dim]  |  "
+        )
+    elif ai_mode:
+        ai_note = "  ✦ Fields extracted by Claude Haiku  |  "
+    else:
+        ai_note = "  "
+
     console.print(
         f"[dim]{ai_note}{len(items)} incidents shown · {total_raw} fetched · "
         f"{total_raw - len(items)} filtered  |  "

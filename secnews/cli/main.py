@@ -248,42 +248,62 @@ def run() -> None:
         items = sorted(items, key=lambda i: -i.score)
 
         # ── AI or heuristic enrichment ────────────────────────────────────────
+        enrichment_stats = None
         if args.ai:
-            from secnews.core.ai_enricher import enrich_items_batch
+            from secnews.core.ai_enricher import enrich_items_batch, EnrichmentStats
 
-            completed_count = 0
             total_count = len(items)
 
             with console.status(
                 f"[bold magenta]✦ Claude Haiku extracting incident intelligence "
                 f"(0/{total_count})...[/bold magenta]"
             ) as status:
-                def _progress(completed, total):
-                    nonlocal completed_count
-                    completed_count = completed
+                def _progress(completed, total, stats):
                     status.update(
                         f"[bold magenta]✦ Claude Haiku extracting incident intelligence "
-                        f"({completed}/{total})...[/bold magenta]"
+                        f"({completed}/{total})"
+                        f"  ✓ AI: {stats.ai_success}  ~ fallback: {stats.heuristic_fallback}"
+                        f"[/bold magenta]"
                     )
 
-                items = enrich_items_batch(
+                items, enrichment_stats = enrich_items_batch(
                     items,
                     model=ai_model,
                     max_workers=ai_max_workers,
                     progress_callback=_progress,
                 )
+
+            # Warn clearly if all AI calls failed (key not working, wrong key, etc.)
+            if enrichment_stats.all_failed:
+                console.print(
+                    "\n[bold yellow]⚠  WARNING:[/bold yellow] All Claude API calls failed — "
+                    "output is heuristic only.\n"
+                    "  Check that your API key is valid:\n"
+                    "  [bold]export ANTHROPIC_API_KEY=sk-ant-...[/bold]\n"
+                    "  Key set: "
+                    + ("[green]Yes[/green]" if os.environ.get("ANTHROPIC_API_KEY") else "[red]No[/red]")
+                    + "\n"
+                )
+            elif enrichment_stats.heuristic_fallback > 0:
+                console.print(
+                    f"[dim]  ℹ  {enrichment_stats.ai_success} items enriched by Claude · "
+                    f"{enrichment_stats.heuristic_fallback} fell back to heuristic[/dim]\n"
+                )
         else:
             with Status("[bold red]Extracting incident details (heuristic)...[/bold red]", console=console):
                 for item in items:
                     item.incident = extract_incident(item.title, item.description)
+                    item.ai_enriched = False
 
         source_names = list({i.source_name for i in raw_items})
+        effective_ai_mode = args.ai and enrichment_stats is not None and not enrichment_stats.all_failed
         print_incidents_digest(
             items,
             days=args.days,
             total_raw=total_raw,
             source_names=source_names,
-            ai_mode=args.ai,
+            ai_mode=effective_ai_mode,
+            enrichment_stats=enrichment_stats,
         )
 
     # ── Standard digest mode ──────────────────────────────────────────────────

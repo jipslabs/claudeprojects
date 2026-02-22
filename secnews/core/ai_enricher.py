@@ -23,6 +23,7 @@ import logging
 import os
 import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass
 from typing import Any
 
 from secnews.core.incident import IncidentDetail
@@ -76,7 +77,7 @@ def _get_client():
             _client = anthropic.Anthropic(api_key=api_key)
         except ImportError:
             raise ImportError(
-                "anthropic package not installed. Run: pip install anthropic"
+                "anthropic package not installed. Run: pip install -e '.[ai]'"
             )
     return _client
 
@@ -94,7 +95,6 @@ def is_available() -> bool:
 
 def _parse_response(raw: str) -> dict[str, Any]:
     """Extract JSON from Claude's response, handling minor formatting issues."""
-    # Strip markdown code fences if present
     raw = raw.strip()
     raw = re.sub(r"^```(?:json)?\s*", "", raw)
     raw = re.sub(r"\s*```$", "", raw)
@@ -122,7 +122,7 @@ def enrich_item(
                     "role": "user",
                     "content": _USER_PROMPT.format(
                         title=title,
-                        description=description[:800],  # cap description length
+                        description=description[:800],
                     ),
                 }
             ],
@@ -155,6 +155,19 @@ def _dict_to_incident(data: dict[str, Any]) -> IncidentDetail:
     )
 
 
+# ── Batch enrichment result ───────────────────────────────────────────────────
+
+@dataclass
+class EnrichmentStats:
+    total: int = 0
+    ai_success: int = 0
+    heuristic_fallback: int = 0
+
+    @property
+    def all_failed(self) -> bool:
+        return self.total > 0 and self.ai_success == 0
+
+
 # ── Batch enrichment ──────────────────────────────────────────────────────────
 
 def enrich_items_batch(
@@ -162,53 +175,63 @@ def enrich_items_batch(
     model: str = "claude-haiku-4-5",
     max_workers: int = 5,
     progress_callback=None,
-) -> list:
+) -> tuple[list, EnrichmentStats]:
     """
     Enrich a list of NewsItems with AI-extracted incident details.
     Uses a thread pool to parallelize API calls (respects rate limits).
     Falls back to heuristic extraction for any item that fails.
 
-    Args:
-        items: list of NewsItem
-        model: Anthropic model to use
-        max_workers: parallel API calls (keep ≤5 to avoid rate limits)
-        progress_callback: optional callable(completed, total) for progress
-
     Returns:
-        The same list with item.incident populated for each item.
+        (enriched_items, EnrichmentStats)
+        Stats track how many items were AI-enriched vs heuristic fallback.
     """
     from secnews.core.incident import extract_incident
 
-    total = len(items)
+    stats = EnrichmentStats(total=len(items))
     completed = 0
 
-    def _enrich_one(item):
+    # Track AI success/failure to detect total API failure early
+    _ai_results: list[bool] = []
+
+    def _enrich_one(item) -> tuple[Any, bool]:
+        """Returns (item, ai_succeeded)."""
         result = enrich_item(item.title, item.description, model=model)
         if result:
             incident = _dict_to_incident(result)
-            # Apply AI score boost
             item.score = min(item.score + incident.ai_score_boost, 100.0)
             item.incident = incident
+            item.ai_enriched = True
+            return item, True
         else:
-            # Fallback to heuristic
             item.incident = extract_incident(item.title, item.description)
-        return item
+            item.ai_enriched = False
+            return item, False
 
     enriched = []
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = {executor.submit(_enrich_one, item): item for item in items}
         for future in as_completed(futures):
+            orig_item = futures[future]
             try:
-                enriched.append(future.result())
+                result_item, ai_ok = future.result()
+                enriched.append(result_item)
+                if ai_ok:
+                    stats.ai_success += 1
+                else:
+                    stats.heuristic_fallback += 1
+                _ai_results.append(ai_ok)
             except Exception as e:
-                item = futures[future]
-                logger.warning("Enrichment failed for '%s': %s", item.title[:60], e)
-                item.incident = extract_incident(item.title, item.description)
-                enriched.append(item)
+                logger.warning("Enrichment failed for '%s': %s", orig_item.title[:60], e)
+                orig_item.incident = extract_incident(orig_item.title, orig_item.description)
+                orig_item.ai_enriched = False
+                enriched.append(orig_item)
+                stats.heuristic_fallback += 1
+                _ai_results.append(False)
+
             completed += 1
             if progress_callback:
-                progress_callback(completed, total)
+                progress_callback(completed, len(items), stats)
 
     # Re-sort by score (AI boost may have changed ordering)
     enriched.sort(key=lambda i: -i.score)
-    return enriched
+    return enriched, stats

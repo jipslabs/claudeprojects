@@ -63,7 +63,7 @@ def _score_style(score: float) -> str:
     return "dim"
 
 
-def _build_incident_panel(item: NewsItem, idx: int) -> Panel:
+def _build_incident_panel(item: NewsItem, idx: int, ai_mode: bool = False) -> Panel:
     """Render a single incident as a structured Rich Panel."""
     inc: IncidentDetail = item.incident or extract_incident(item.title, item.description)
 
@@ -75,6 +75,8 @@ def _build_incident_panel(item: NewsItem, idx: int) -> Panel:
     title_text.append(f" #{idx}  ", style="bold white on dark_blue")
     title_text.append(f" {icon} {inc.incident_type}  ", style="bold cyan")
     title_text.append(f"Score: {item.score:.0f}", style=_score_style(item.score))
+    if ai_mode:
+        title_text.append("  ✦ AI", style="bold magenta")
     title_text.append(f"  {_format_age(item)}", style="dim")
 
     # Build the structured table
@@ -123,6 +125,13 @@ def _build_incident_panel(item: NewsItem, idx: int) -> Panel:
         Text(fixed_label, style=fixed_style),
     )
 
+    # 6. AI analyst rationale (only in AI mode)
+    if ai_mode and inc.severity_rationale:
+        table.add_row(
+            "AI Analysis",
+            Text(inc.severity_rationale, style="italic magenta"),
+        )
+
     # Source + URL row
     source_text = Text()
     source_text.append(item.source_name, style="dim")
@@ -141,24 +150,27 @@ def _build_incident_panel(item: NewsItem, idx: int) -> Panel:
     return Panel(table, title=title_text, border_style=border_color, padding=(0, 1))
 
 
-def print_incidents_header(days: int, total_items: int, total_sources: int) -> None:
+def print_incidents_header(days: int, total_items: int, total_sources: int, ai_mode: bool = False) -> None:
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     title = Text()
     title.append("  secnews  ", style="bold white on dark_blue")
     title.append("  Cyber Incident Report", style="bold red")
+    if ai_mode:
+        title.append("  ✦ AI-Enhanced", style="bold magenta")
     title.append(f"  — {now}", style="bold")
 
     stats = (
         f"Look-back: {days} days  |  "
         f"Incidents: {total_items}  |  "
         f"Sources: {total_sources}"
+        + ("  |  Powered by Claude Haiku" if ai_mode else "")
     )
     console.print()
     console.print(Panel(title, subtitle=stats, border_style="red", padding=(0, 2)))
     console.print()
 
 
-def print_legend() -> None:
+def print_legend(ai_mode: bool = False) -> None:
     legend = Text()
     legend.append("Border color: ", style="dim")
     legend.append("■ Red", style="bold red")
@@ -167,6 +179,9 @@ def print_legend() -> None:
     legend.append(" = Fix available  ", style="dim")
     legend.append("■ Yellow", style="bold yellow")
     legend.append(" = Fix status unknown", style="dim")
+    if ai_mode:
+        legend.append("   ✦ AI", style="bold magenta")
+        legend.append(" = Claude-extracted fields", style="dim")
     console.print(legend)
     console.print()
 
@@ -176,24 +191,26 @@ def print_incidents_digest(
     days: int,
     total_raw: int,
     source_names: list[str],
+    ai_mode: bool = False,
 ) -> None:
     """Render the full incident digest."""
-    print_incidents_header(days, len(items), len(source_names))
+    print_incidents_header(days, len(items), len(source_names), ai_mode=ai_mode)
 
     if not items:
         console.print("[yellow]No incidents found matching your criteria.[/yellow]")
         return
 
-    print_legend()
+    print_legend(ai_mode=ai_mode)
 
     for idx, item in enumerate(items, start=1):
-        panel = _build_incident_panel(item, idx)
+        panel = _build_incident_panel(item, idx, ai_mode=ai_mode)
         console.print(panel)
         console.print()
 
     console.print(Rule(style="dim"))
+    ai_note = "  ✦ Fields extracted by Claude Haiku  |  " if ai_mode else "  "
     console.print(
-        f"[dim]  {len(items)} incidents shown · {total_raw} fetched · "
+        f"[dim]{ai_note}{len(items)} incidents shown · {total_raw} fetched · "
         f"{total_raw - len(items)} filtered  |  "
         f"Run [bold]secnews --incidents --help[/bold] for options[/dim]"
     )

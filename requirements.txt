@@ -1,5 +1,9 @@
+# Core dependencies
 feedparser>=6.0
 requests>=2.31
 rapidfuzz>=3.6
 rich>=13.7
 pyyaml>=6.0
+
+# Optional: AI enrichment (required for --ai flag)
+# anthropic>=0.40

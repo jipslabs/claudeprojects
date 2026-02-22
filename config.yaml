@@ -180,3 +180,11 @@ fetch:
 # Deduplication
 dedup:
   similarity_threshold: 85  # rapidfuzz ratio threshold (0-100)
+
+# AI enrichment (used when --ai flag is passed)
+# Requires: pip install anthropic && export ANTHROPIC_API_KEY=sk-ant-...
+ai:
+  model: claude-haiku-4-5          # fastest and cheapest; use claude-sonnet-4-5 for higher quality
+  max_concurrent_requests: 5       # parallel API calls (keep <=5 to stay within rate limits)
+  # Estimated cost: ~$0.001 per incident item
+  # Typical 40-item report: ~$0.04  |  Monthly (daily runs): ~$1.20

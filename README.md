@@ -6,12 +6,13 @@
 
 ## What It Does
 
-`secnews` has two modes:
+`secnews` has two modes, each with optional AI enrichment:
 
 | Mode | Command | What you get |
 |------|---------|--------------|
 | **News Digest** | `secnews` | Ranked, deduplicated headlines from CVE feeds, blogs, threat intel, HackerNews, Reddit — grouped by topic |
 | **Incident Report** | `secnews --incidents` | Structured breach/attack cards for the last 14 days — each showing what happened, who was hit, impact, root cause, and fix status |
+| **AI-Enhanced Incidents** | `secnews --incidents --ai` | Same as above, but incident fields extracted by **Claude Haiku** for significantly higher accuracy |
 
 ---
 
@@ -30,8 +31,11 @@
 git clone https://github.com/jipslabs/claudeprojects.git
 cd claudeprojects/cyberbulletin
 
-# 2. Install the package
+# 2. Install the package (core, no AI)
 pip install -e .
+
+# 2b. Install with AI support (adds the anthropic package)
+pip install -e ".[ai]"
 
 # 3. Confirm the CLI is available
 secnews --help
@@ -40,8 +44,18 @@ secnews --help
 > **Tip:** Use a virtual environment to keep dependencies isolated:
 > ```bash
 > python3 -m venv .venv && source .venv/bin/activate
-> pip install -e .
+> pip install -e ".[ai]"
 > ```
+
+### Set up AI enrichment (optional)
+
+```bash
+# Get your key at https://console.anthropic.com
+export ANTHROPIC_API_KEY=sk-ant-...
+
+# Add to your shell profile to persist it
+echo 'export ANTHROPIC_API_KEY=sk-ant-...' >> ~/.zshrc
+```
 
 ---
 
@@ -153,14 +167,17 @@ Switches to a **structured incident report** view. Looks back **14 days** by def
 #### Incident mode examples
 
 ```bash
-# 14-day incident report (default)
+# 14-day incident report — heuristic extraction (no API key needed)
 secnews --incidents
 
-# Last 7 days only
-secnews --incidents --days 7
+# 14-day incident report — AI-powered extraction via Claude Haiku
+secnews --incidents --ai
 
-# Incidents involving a specific company
-secnews --incidents --filter Microsoft
+# Last 7 days, AI-enhanced
+secnews --incidents --ai --days 7
+
+# Incidents involving a specific company (AI-enhanced)
+secnews --incidents --ai --filter Microsoft
 
 # Ransomware incidents only
 secnews --incidents --filter ransomware
@@ -168,11 +185,62 @@ secnews --incidents --filter ransomware
 # High-severity incidents only
 secnews --incidents --min-score 65
 
-# Data breaches involving a specific CVE
-secnews --incidents --filter CVE-2024
+# Save the AI report to a file
+secnews --incidents --ai > incident-report-$(date +%F).txt
+```
 
-# Save the report to a file
-secnews --incidents > incident-report-$(date +%F).txt
+---
+
+## AI Enrichment (Claude Haiku)
+
+When you pass `--ai`, each incident card's fields are extracted by **Claude Haiku** instead of regex patterns. This significantly improves accuracy for:
+
+- **Who was affected** — correctly identifies companies even with indirect phrasing (e.g. "a subsidiary of UnitedHealth Group" → `Change Healthcare`)
+- **Impact** — extracts quantified damage ("73 million records", "$22M ransom") from anywhere in the article
+- **Root cause** — identifies specific CVE IDs, attack chains, and technical mechanisms
+- **Fixed?** — correctly handles nuanced language like "a workaround is available but a full patch is pending"
+- **AI Analysis** — adds a one-sentence analyst note explaining real-world significance
+
+### AI output example
+
+```
+┌─ #1  🔒 Ransomware  Score: 94  ✦ AI  3d ago ──────────────────────┐
+│  What happened    Change Healthcare confirms ALPHV ransomware attack │
+│  Who was affected Change Healthcare (UnitedHealth Group subsidiary)  │
+│  Impact           Pharmacy payment processing disrupted nationwide;  │
+│                   patient prescription access affected at 90%+ of US │
+│                   pharmacies; $22M ransom reportedly paid            │
+│  Root cause       ALPHV/BlackCat ransomware via stolen VPN          │
+│                   credentials on Citrix portal lacking MFA           │
+│  Fixed?           NO — No Fix / Actively Exploited                  │
+│  AI Analysis      Largest healthcare cyberattack in US history;      │
+│                   exposed critical dependency on single clearinghouse │
+│  Source           BleepingComputer → https://...                    │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+### Cost
+
+| Usage | Items/run | Cost/run | Monthly (daily) |
+|-------|-----------|----------|-----------------|
+| Conservative | 20 | ~$0.013 | ~**$0.40** |
+| Typical | 40 | ~$0.026 | ~**$0.79** |
+| Heavy | 80 | ~$0.052 | ~**$1.57** |
+
+Model used: `claude-haiku-4-5` at $0.80/M input + $4.00/M output tokens.
+Override in `config.yaml` with `ai.model: claude-sonnet-4-5` for higher quality (~10× cost).
+
+### Setup
+
+```bash
+# 1. Install anthropic package
+pip install -e ".[ai]"
+
+# 2. Set your API key (get one free at console.anthropic.com)
+export ANTHROPIC_API_KEY=sk-ant-...
+
+# 3. Run with AI
+secnews --incidents --ai
 ```
 
 ---
@@ -325,7 +393,8 @@ cyberbulletin/
 │   │   ├── cluster.py             # Union-find keyword-based topic clustering
 │   │   ├── scorer.py              # Heuristic 0–100 scoring engine
 │   │   ├── keywords.py            # Keyword extraction (CVEs, actors, products)
-│   │   └── incident.py            # Heuristic incident field extractor
+│   │   ├── incident.py            # Heuristic incident field extractor (fallback)
+│   │   └── ai_enricher.py         # Claude Haiku AI enrichment (--ai mode)
 │   │
 │   └── sources/
 │       ├── fetcher.py             # ThreadPoolExecutor parallel dispatcher
@@ -339,7 +408,8 @@ cyberbulletin/
 └── tests/
     ├── test_dedup.py
     ├── test_scorer.py
-    └── test_cluster.py
+    ├── test_cluster.py
+    └── test_ai_enricher.py        # AI enricher tests (mocked — no real API calls)
 ```
 
 ---
@@ -357,13 +427,14 @@ pytest --tb=short   # shorter tracebacks
 
 ### Dependencies
 
-| Package | Purpose |
-|---------|---------|
-| `feedparser` | RSS/Atom feed parsing |
-| `requests` | HTTP fetching |
-| `rapidfuzz` | Fuzzy string deduplication |
-| `rich` | Terminal rendering |
-| `pyyaml` | Config file parsing |
+| Package | Purpose | Required |
+|---------|---------|----------|
+| `feedparser` | RSS/Atom feed parsing | Always |
+| `requests` | HTTP fetching | Always |
+| `rapidfuzz` | Fuzzy string deduplication | Always |
+| `rich` | Terminal rendering | Always |
+| `pyyaml` | Config file parsing | Always |
+| `anthropic` | Claude API client for `--ai` mode | Optional (`pip install -e ".[ai]"`) |
 
 ---
 

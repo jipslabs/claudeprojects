@@ -17,6 +17,27 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 
+@dataclass
+class IncidentDetail:
+    incident_type: str = "Unknown"
+    victim: str = "Unknown"
+    impact: str = "Not reported"
+    root_cause: str = "Under investigation"
+    is_fixed: Optional[bool] = None   # True=fixed, False=not fixed, None=unknown
+    severity_rationale: str = ""      # AI-generated explanation (empty in heuristic mode)
+    ai_score_boost: float = 0.0       # AI-assigned score boost (0–20)
+
+    @property
+    def fixed_label(self) -> str:
+        match self.is_fixed:
+            case True:
+                return "Yes — patch/fix available"
+            case False:
+                return "No — actively exploited / no patch"
+            case _:
+                return "Unknown"
+
+
 # ── Incident type patterns ────────────────────────────────────────────────────
 
 _INCIDENT_PATTERNS: list[tuple[str, str]] = [
@@ -119,25 +140,6 @@ _VICTIM_GENERIC = [
     re.compile(r"vulnerability\s+in\s+([A-Za-z0-9][A-Za-z0-9\s&\-'\.]{1,40}?)(?:\s*[,\.;]|\s+(?:allows?|enables?|could|lets?))", re.IGNORECASE),
     re.compile(r"(?:flaw|bug|issue|vulnerability)\s+(?:found|discovered|identified)\s+in\s+([A-Za-z0-9][A-Za-z0-9\s&\-'\.]{1,40}?)(?:\s*[,\.;])", re.IGNORECASE),
 ]
-
-
-@dataclass
-class IncidentDetail:
-    incident_type: str = "Unknown"
-    victim: str = "Unknown"
-    impact: str = "Not reported"
-    root_cause: str = "Under investigation"
-    is_fixed: Optional[bool] = None  # True=fixed, False=not fixed, None=unknown
-
-    @property
-    def fixed_label(self) -> str:
-        match self.is_fixed:
-            case True:
-                return "Yes — patch/fix available"
-            case False:
-                return "No — actively exploited / no patch"
-            case _:
-                return "Unknown"
 
 
 def _first_match(patterns: list[tuple[str, str]], text: str) -> str | None:

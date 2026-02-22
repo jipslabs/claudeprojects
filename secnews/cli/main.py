@@ -7,7 +7,6 @@ import logging
 import sys
 from pathlib import Path
 
-# Incident-relevant keywords for auto-filtering in --incidents mode
 _INCIDENT_KEYWORDS = {
     "breach", "breached", "hacked", "hack", "compromised", "ransomware",
     "attack", "attacked", "stolen", "leaked", "exposed", "exfiltrated",
@@ -36,7 +35,8 @@ def build_parser() -> argparse.ArgumentParser:
         description=(
             "Security News Aggregator & Digest — "
             "fetch, deduplicate, cluster, and score cybersecurity news.\n"
-            "Use --incidents for a structured breach/incident report view."
+            "Use --incidents for a structured breach/incident report view.\n"
+            "Add --ai to enrich incidents with Claude Haiku (requires ANTHROPIC_API_KEY)."
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
@@ -48,10 +48,13 @@ Examples:
   secnews --sources cve,advisories     # Only CVE and advisory sources
   secnews --verbose                    # Full descriptions + URLs
 
-  secnews --incidents                  # Structured 14-day incident report
+  secnews --incidents                  # Structured 14-day incident report (heuristic)
+  secnews --incidents --ai             # Same, but fields extracted by Claude Haiku
   secnews --incidents --days 7         # Incidents from last 7 days
-  secnews --incidents --filter Apple   # Incidents mentioning Apple
-  secnews --incidents --min-score 50   # High-relevance incidents only
+  secnews --incidents --ai --filter Apple  # AI-enhanced, filtered to Apple incidents
+
+Environment variables:
+  ANTHROPIC_API_KEY   Required for --ai mode (get one at console.anthropic.com)
         """,
     )
 
@@ -112,9 +115,8 @@ Examples:
         "--incidents",
         action="store_true",
         help=(
-            "Switch to structured incident report mode. Shows breach/attack "
-            "details: what happened, who was affected, impact, root cause, "
-            "and fix status. Default look-back is 14 days."
+            "Structured incident report mode. Shows: what happened, who was affected, "
+            "impact, root cause, and fix status. Default look-back is 14 days."
         ),
     )
     parser.add_argument(
@@ -125,11 +127,29 @@ Examples:
         help="Look-back window in days for --incidents mode (default: 14)",
     )
 
+    # ── AI enrichment flag ────────────────────────────────────────────────────
+    parser.add_argument(
+        "--ai",
+        action="store_true",
+        help=(
+            "Enable Claude Haiku AI enrichment for incident field extraction. "
+            "Requires ANTHROPIC_API_KEY environment variable. "
+            "Significantly improves accuracy of victim, impact, root cause, and fix status. "
+            "Cost: ~$0.001 per incident (~$0.05 for a typical 50-item report)."
+        ),
+    )
+    parser.add_argument(
+        "--ai-model",
+        type=str,
+        default=None,
+        metavar="MODEL",
+        help="Override the AI model (default: from config.yaml or claude-haiku-4-5)",
+    )
+
     return parser
 
 
 def _is_incident_related(item) -> bool:
-    """Heuristic: is this item likely about an incident/breach?"""
     combined = f"{item.title} {item.description}".lower()
     return any(kw.lower() in combined for kw in _INCIDENT_KEYWORDS)
 
@@ -167,33 +187,59 @@ def run() -> None:
     console = Console()
     config = load_config(config_path)
 
+    # ── AI mode validation ────────────────────────────────────────────────────
+    if args.ai:
+        from secnews.core.ai_enricher import is_available
+        if not is_available():
+            import os
+            if not os.environ.get("ANTHROPIC_API_KEY"):
+                console.print(
+                    "\n[bold red]ERROR:[/bold red] --ai requires the ANTHROPIC_API_KEY "
+                    "environment variable.\n"
+                    "  Get a key at: [blue underline]https://console.anthropic.com[/blue underline]\n"
+                    "  Then run:     [bold]export ANTHROPIC_API_KEY=sk-ant-...[/bold]\n"
+                )
+                sys.exit(1)
+            console.print(
+                "\n[bold red]ERROR:[/bold red] anthropic package not installed.\n"
+                "  Run: [bold]pip install anthropic[/bold]\n"
+            )
+            sys.exit(1)
+
+    # Resolve AI model: CLI flag > config > default
+    ai_config = config.get("ai", {})
+    ai_model = args.ai_model or ai_config.get("model", "claude-haiku-4-5")
+    ai_max_workers = ai_config.get("max_concurrent_requests", 5)
+
     # ── Incident mode ─────────────────────────────────────────────────────────
     if args.incidents:
         hours = args.days * 24
-        # Default to incident + threat_intel + blogs + advisories sources
         source_filter = (
             [s.strip() for s in args.sources.split(",")]
             if args.sources
             else ["incidents", "threat_intel", "blogs", "advisories", "community"]
         )
 
-        with Status("[bold red]Fetching incident feeds (14 days)...[/bold red]", console=console):
-            raw_items = fetch_all(config, hours=hours, source_filter=source_filter,
-                                  max_workers=config.get("fetch", {}).get("max_workers", 20))
+        with Status("[bold red]Fetching incident feeds...[/bold red]", console=console):
+            raw_items = fetch_all(
+                config, hours=hours, source_filter=source_filter,
+                max_workers=config.get("fetch", {}).get("max_workers", 20),
+            )
 
         total_raw = len(raw_items)
 
         with Status("[bold red]Deduplicating...[/bold red]", console=console):
-            items = deduplicate(raw_items,
-                                similarity_threshold=config.get("dedup", {}).get("similarity_threshold", 85))
+            items = deduplicate(
+                raw_items,
+                similarity_threshold=config.get("dedup", {}).get("similarity_threshold", 85),
+            )
 
         with Status("[bold red]Scoring...[/bold red]", console=console):
             items = score_all(items, config)
 
-        # Filter to incident-related items only
+        # Filter to incident-related items
         items = [i for i in items if _is_incident_related(i)]
 
-        # Apply user keyword filter
         if args.filter:
             kw = args.filter.lower()
             items = [i for i in items if kw in i.title.lower() or kw in i.description.lower()]
@@ -201,13 +247,44 @@ def run() -> None:
         items = [i for i in items if i.score >= args.min_score]
         items = sorted(items, key=lambda i: -i.score)
 
-        # Enrich each item with incident detail extraction
-        with Status("[bold red]Extracting incident details...[/bold red]", console=console):
-            for item in items:
-                item.incident = extract_incident(item.title, item.description)
+        # ── AI or heuristic enrichment ────────────────────────────────────────
+        if args.ai:
+            from secnews.core.ai_enricher import enrich_items_batch
+
+            completed_count = 0
+            total_count = len(items)
+
+            with console.status(
+                f"[bold magenta]✦ Claude Haiku extracting incident intelligence "
+                f"(0/{total_count})...[/bold magenta]"
+            ) as status:
+                def _progress(completed, total):
+                    nonlocal completed_count
+                    completed_count = completed
+                    status.update(
+                        f"[bold magenta]✦ Claude Haiku extracting incident intelligence "
+                        f"({completed}/{total})...[/bold magenta]"
+                    )
+
+                items = enrich_items_batch(
+                    items,
+                    model=ai_model,
+                    max_workers=ai_max_workers,
+                    progress_callback=_progress,
+                )
+        else:
+            with Status("[bold red]Extracting incident details (heuristic)...[/bold red]", console=console):
+                for item in items:
+                    item.incident = extract_incident(item.title, item.description)
 
         source_names = list({i.source_name for i in raw_items})
-        print_incidents_digest(items, days=args.days, total_raw=total_raw, source_names=source_names)
+        print_incidents_digest(
+            items,
+            days=args.days,
+            total_raw=total_raw,
+            source_names=source_names,
+            ai_mode=args.ai,
+        )
 
     # ── Standard digest mode ──────────────────────────────────────────────────
     else:
@@ -218,14 +295,18 @@ def run() -> None:
         )
 
         with Status("[bold blue]Fetching security feeds...[/bold blue]", console=console):
-            raw_items = fetch_all(config, hours=args.hours, source_filter=source_filter,
-                                  max_workers=config.get("fetch", {}).get("max_workers", 20))
+            raw_items = fetch_all(
+                config, hours=args.hours, source_filter=source_filter,
+                max_workers=config.get("fetch", {}).get("max_workers", 20),
+            )
 
         total_raw = len(raw_items)
 
         with Status("[bold blue]Deduplicating...[/bold blue]", console=console):
-            items = deduplicate(raw_items,
-                                similarity_threshold=config.get("dedup", {}).get("similarity_threshold", 85))
+            items = deduplicate(
+                raw_items,
+                similarity_threshold=config.get("dedup", {}).get("similarity_threshold", 85),
+            )
 
         with Status("[bold blue]Scoring...[/bold blue]", console=console):
             items = score_all(items, config)
@@ -240,8 +321,10 @@ def run() -> None:
             clusters = cluster_items(items)
 
         source_names = list({i.source_name for i in raw_items})
-        print_digest(clusters, verbose=args.verbose, hours=args.hours,
-                     total_raw=total_raw, source_names=source_names)
+        print_digest(
+            clusters, verbose=args.verbose, hours=args.hours,
+            total_raw=total_raw, source_names=source_names,
+        )
 
 
 def main() -> None:

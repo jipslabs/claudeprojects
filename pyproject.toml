@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "secnews"
-version = "1.0.0"
+version = "1.1.0"
 description = "Security News Aggregator & Digest — a CLI tool for daily threat intel briefings"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -34,7 +34,16 @@ dependencies = [
 secnews = "secnews.cli.main:main"
 
 [project.optional-dependencies]
+ai = [
+    "anthropic>=0.40",
+]
 dev = [
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+    "responses>=0.25",
+]
+all = [
+    "anthropic>=0.40",
     "pytest>=7.4",
     "pytest-cov>=4.1",
     "responses>=0.25",

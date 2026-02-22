@@ -1,0 +1,139 @@
+---
+# secnews configuration
+# Edit this file to add/remove sources or tune your watchlist.
+
+sources:
+  cve:
+    - name: NVD CVE API
+      type: nvd_api
+      url: https://services.nvd.nist.gov/rest/json/cves/2.0
+      tier: 1
+      enabled: true
+    - name: OSV.dev
+      type: osv_api
+      url: https://api.osv.dev/v1/query
+      tier: 1
+      enabled: true
+
+  blogs:
+    - name: Krebs on Security
+      type: rss
+      url: https://krebsonsecurity.com/feed/
+      tier: 1
+      enabled: true
+    - name: SANS ISC
+      type: rss
+      url: https://isc.sans.edu/rssfeed_full.xml
+      tier: 1
+      enabled: true
+    - name: Schneier on Security
+      type: rss
+      url: https://www.schneier.com/feed/atom
+      tier: 2
+      enabled: true
+
+  community:
+    - name: HackerNews Security
+      type: hn_api
+      url: https://hacker-news.firebaseio.com/v0
+      tier: 2
+      enabled: true
+    - name: Reddit r/netsec
+      type: rss
+      url: https://www.reddit.com/r/netsec/.rss
+      tier: 2
+      enabled: true
+    - name: Reddit r/cybersecurity
+      type: rss
+      url: https://www.reddit.com/r/cybersecurity/.rss
+      tier: 3
+      enabled: true
+
+  advisories:
+    - name: CISA Known Exploited Vulnerabilities
+      type: json_api
+      url: https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json
+      tier: 1
+      enabled: true
+    - name: Google Project Zero
+      type: rss
+      url: https://feeds.feedburner.com/GoogleProjectZeroResearch
+      tier: 1
+      enabled: true
+    - name: US-CERT CISA Alerts
+      type: rss
+      url: https://www.cisa.gov/uscert/ncas/alerts.xml
+      tier: 1
+      enabled: true
+
+  threat_intel:
+    - name: AlienVault OTX
+      type: rss
+      url: https://otx.alienvault.com/pulse/subscribed/
+      tier: 2
+      enabled: true
+    - name: Threatpost
+      type: rss
+      url: https://threatpost.com/feed/
+      tier: 2
+      enabled: true
+    - name: The Hacker News
+      type: rss
+      url: https://feeds.feedburner.com/TheHackersNews
+      tier: 2
+      enabled: true
+    - name: SecurityWeek
+      type: rss
+      url: https://feeds.feedburner.com/securityweek
+      tier: 2
+      enabled: true
+    - name: BleepingComputer
+      type: rss
+      url: https://www.bleepingcomputer.com/feed/
+      tier: 2
+      enabled: true
+    - name: Dark Reading
+      type: rss
+      url: https://www.darkreading.com/rss.xml
+      tier: 3
+      enabled: true
+
+# Watchlist keywords: items matching these get a score boost
+watchlist:
+  - ransomware
+  - zero-day
+  - critical
+  - RCE
+  - remote code execution
+  - authentication bypass
+  - supply chain
+  - nation-state
+  - APT
+  - active exploitation
+  - CISA KEV
+  - Log4j
+  - Exchange
+  - Ivanti
+  - Fortinet
+  - Cisco
+  - Microsoft
+  - Apple
+  - Linux kernel
+
+# Scoring weights (must sum to 100)
+scoring:
+  cvss_weight: 30
+  recency_weight: 25
+  source_tier_weight: 20
+  engagement_weight: 10
+  watchlist_weight: 15
+
+# Fetch settings
+fetch:
+  timeout_seconds: 10
+  max_workers: 20
+  user_agent: "secnews/1.0 (security-digest-tool)"
+
+# Deduplication
+dedup:
+  similarity_threshold: 85  # rapidfuzz ratio threshold (0-100)

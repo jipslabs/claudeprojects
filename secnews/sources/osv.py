@@ -7,9 +7,8 @@ import logging
 import zipfile
 from datetime import datetime, timezone
 
-import requests
-
 from secnews.core.models import NewsItem
+from secnews.sources import http_get
 
 logger = logging.getLogger(__name__)
 
@@ -100,7 +99,7 @@ def _fetch_ecosystem(ecosystem: str, name: str, category: str, tier: int, cutoff
     """Download the ecosystem zip and parse the most recently modified records."""
     zip_url = f"https://osv-vulnerabilities.storage.googleapis.com/{ecosystem}/all.zip"
     try:
-        resp = requests.get(zip_url, timeout=_TIMEOUT, headers=_HEADERS, stream=True)
+        resp = http_get(zip_url, timeout=_TIMEOUT, headers=_HEADERS, stream=True)
         resp.raise_for_status()
         content = resp.content
     except Exception as exc:

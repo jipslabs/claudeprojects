@@ -9,9 +9,9 @@ from email.utils import parsedate_to_datetime
 from typing import Optional
 
 import feedparser
-import requests
 
 from secnews.core.models import NewsItem
+from secnews.sources import _safe_url, http_get
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +51,7 @@ def fetch(
     cutoff: datetime,
 ) -> list[NewsItem]:
     try:
-        resp = requests.get(url, timeout=_TIMEOUT, headers=_HEADERS)
+        resp = http_get(url, timeout=_TIMEOUT, headers=_HEADERS)
         resp.raise_for_status()
         feed = feedparser.parse(resp.content)
     except Exception as exc:
@@ -61,7 +61,7 @@ def fetch(
     items: list[NewsItem] = []
     for entry in feed.entries:
         title = entry.get("title", "").strip()
-        link = entry.get("link", "").strip()
+        link = _safe_url(entry.get("link", "").strip())
         if not title or not link:
             continue
 

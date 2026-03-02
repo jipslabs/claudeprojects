@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from rich import box
 from rich.columns import Columns
 from rich.console import Console
+from rich.markup import escape as markup_escape
 from rich.panel import Panel
 from rich.rule import Rule
 from rich.table import Table
@@ -115,8 +116,9 @@ def print_cluster(cluster: Cluster, verbose: bool, show_all: bool) -> None:
     if is_other:
         header.append("  Unclustered Items", style="bold dim")
     else:
-        header.append(f"  {cluster.name}", style="bold cyan")
-        header.append(kw_str, style="dim cyan")
+        # markup_escape prevents Rich from interpreting brackets in cluster names/keywords
+        header.append(f"  {markup_escape(cluster.name)}", style="bold cyan")
+        header.append(markup_escape(kw_str), style="dim cyan")
         header.append(f"  ({len(cluster.items)} items)", style="dim")
 
     console.print(Rule(header, style="blue" if not is_other else "dim"))

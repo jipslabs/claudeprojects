@@ -6,9 +6,8 @@ import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 
-import requests
-
 from secnews.core.models import NewsItem
+from secnews.sources import _safe_url, http_get
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +25,7 @@ _MAX_ITEMS = 30      # max security items to return
 
 def _fetch_item(base_url: str, item_id: int) -> dict | None:
     try:
-        resp = requests.get(
+        resp = http_get(
             f"{base_url}/item/{item_id}.json",
             timeout=_TIMEOUT,
             headers=_HEADERS,
@@ -51,7 +50,7 @@ def fetch(
 ) -> list[NewsItem]:
     # Fetch top story IDs
     try:
-        resp = requests.get(
+        resp = http_get(
             f"{url}/topstories.json",
             timeout=_TIMEOUT,
             headers=_HEADERS,
@@ -79,7 +78,8 @@ def fetch(
             if published < cutoff:
                 continue
 
-            link = data.get("url") or f"https://news.ycombinator.com/item?id={data['id']}"
+            raw_link = data.get("url") or ""
+            link = _safe_url(raw_link) or f"https://news.ycombinator.com/item?id={data['id']}"
             points = data.get("score", 0)
 
             items.append(

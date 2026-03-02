@@ -5,9 +5,8 @@ from __future__ import annotations
 import logging
 from datetime import datetime, timedelta, timezone
 
-import requests
-
 from secnews.core.models import NewsItem
+from secnews.sources import http_get
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +33,7 @@ def fetch(
     }
 
     try:
-        resp = requests.get(url, params=params, timeout=_TIMEOUT, headers=_HEADERS)
+        resp = http_get(url, params=params, timeout=_TIMEOUT, headers=_HEADERS)
         resp.raise_for_status()
         ct = resp.headers.get("Content-Type", "")
         if "json" not in ct:

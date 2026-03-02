@@ -6,9 +6,8 @@ import logging
 import re
 from datetime import datetime, timezone
 
-import requests
-
 from secnews.core.models import NewsItem
+from secnews.sources import _safe_url, http_get
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +24,7 @@ def fetch(
     cutoff: datetime,
 ) -> list[NewsItem]:
     try:
-        resp = requests.get(url, timeout=_TIMEOUT, headers=_HEADERS)
+        resp = http_get(url, timeout=_TIMEOUT, headers=_HEADERS)
         resp.raise_for_status()
         ct = resp.headers.get("Content-Type", "")
         if "json" not in ct:
@@ -53,9 +52,9 @@ def fetch(
         title = (
             raw.get("title") or raw.get("name") or raw.get("summary") or ""
         ).strip()
-        link = (
-            raw.get("url") or raw.get("link") or raw.get("html_url") or ""
-        ).strip()
+        link = _safe_url(
+            (raw.get("url") or raw.get("link") or raw.get("html_url") or "").strip()
+        )
         if not title or not link:
             continue
 

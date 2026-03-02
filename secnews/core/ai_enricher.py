@@ -92,6 +92,9 @@ def _validate_response(data: dict) -> bool:
     boost = data.get("ai_score_boost", 0)
     if not isinstance(boost, (int, float)):
         return False
+    # Clamp boost to [0, 20] — reject out-of-range values
+    if not (0 <= float(boost) <= 20):
+        data["ai_score_boost"] = max(0.0, min(float(boost), 20.0))
     return True
 
 

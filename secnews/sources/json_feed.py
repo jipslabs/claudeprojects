@@ -27,6 +27,9 @@ def fetch(
     try:
         resp = requests.get(url, timeout=_TIMEOUT, headers=_HEADERS)
         resp.raise_for_status()
+        ct = resp.headers.get("Content-Type", "")
+        if "json" not in ct:
+            logger.warning("JSON feed %s: unexpected Content-Type '%s'", name, ct)
         data = resp.json()
     except Exception as exc:
         logger.warning("JSON feed fetch failed for %s: %s", name, exc)

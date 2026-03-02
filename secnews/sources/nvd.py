@@ -36,6 +36,9 @@ def fetch(
     try:
         resp = requests.get(url, params=params, timeout=_TIMEOUT, headers=_HEADERS)
         resp.raise_for_status()
+        ct = resp.headers.get("Content-Type", "")
+        if "json" not in ct:
+            logger.warning("NVD: unexpected Content-Type '%s'", ct)
         data = resp.json()
     except Exception as exc:
         logger.warning("NVD fetch failed: %s", exc)

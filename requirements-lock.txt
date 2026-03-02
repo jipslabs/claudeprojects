@@ -1,0 +1,18 @@
+# Pinned dependency versions for reproducible installs.
+# Generated: 2026-03-02
+# Update with: pip freeze | grep -E '<pkg>' > requirements-lock.txt
+#
+# Core runtime
+feedparser==6.0.12
+requests==2.32.3
+rapidfuzz==3.14.3
+rich==13.9.4
+PyYAML==6.0.1
+#
+# Optional AI
+anthropic==0.83.0
+#
+# Dev / test
+pytest==7.4.4
+pytest-cov==7.0.0
+responses==0.26.0

@@ -22,6 +22,31 @@ _HEADERS = {"User-Agent": "secnews/1.0 (security-digest-tool)"}
 _ECOSYSTEMS = ["PyPI", "npm", "Go", "Maven", "RubyGems", "crates.io", "NuGet"]
 _MAX_PER_ECOSYSTEM = 8   # cap to keep fetch time reasonable
 
+# Zip safety limits — defend against zip bombs and path traversal
+_MAX_ZIP_MEMBER_BYTES = 10 * 1024 * 1024   # 10 MB per member
+_MAX_ZIP_TOTAL_BYTES  = 150 * 1024 * 1024  # 150 MB total uncompressed per ecosystem
+
+
+def _safe_zip_members(zf: zipfile.ZipFile, ecosystem: str) -> list[zipfile.ZipInfo]:
+    """Return ZipInfo entries that are safe to read — rejects path traversal and oversized members."""
+    safe = []
+    for info in zf.infolist():
+        name = info.filename
+        # Reject absolute paths and directory traversal
+        parts = name.replace("\\", "/").split("/")
+        if name.startswith("/") or ".." in parts:
+            logger.warning("OSV %s: rejected suspicious zip entry '%s'", ecosystem, name)
+            continue
+        # Reject individually oversized members (zip bomb defence layer 1)
+        if info.file_size > _MAX_ZIP_MEMBER_BYTES:
+            logger.warning(
+                "OSV %s: rejected oversized zip member '%s' (%d bytes)",
+                ecosystem, name, info.file_size,
+            )
+            continue
+        safe.append(info)
+    return safe
+
 
 def _parse_osv_record(record: dict, name: str, category: str, tier: int, cutoff: datetime) -> NewsItem | None:
     """Convert a raw OSV JSON record to a NewsItem, or None if outside window."""
@@ -84,15 +109,27 @@ def _fetch_ecosystem(ecosystem: str, name: str, category: str, tier: int, cutoff
 
     items: list[NewsItem] = []
     try:
+        import json
         with zipfile.ZipFile(io.BytesIO(content)) as zf:
-            import json
-            # Sort entries by file name (OSV IDs are roughly chronological)
-            names = sorted(zf.namelist(), reverse=True)
-            for fname in names:
-                if not fname.endswith(".json"):
-                    continue
+            # Zip bomb defence layer 2: reject if total uncompressed size is excessive
+            total_uncompressed = sum(i.file_size for i in zf.infolist())
+            if total_uncompressed > _MAX_ZIP_TOTAL_BYTES:
+                logger.warning(
+                    "OSV %s: zip too large (%d bytes uncompressed), skipping",
+                    ecosystem, total_uncompressed,
+                )
+                return []
+
+            # Validate each member path before opening (zip slip defence)
+            safe_infos = _safe_zip_members(zf, ecosystem)
+            json_infos = sorted(
+                (i for i in safe_infos if i.filename.endswith(".json")),
+                key=lambda i: i.filename,
+                reverse=True,
+            )
+            for info in json_infos:
                 try:
-                    with zf.open(fname) as f:
+                    with zf.open(info) as f:
                         record = json.load(f)
                 except Exception:
                     continue

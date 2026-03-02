@@ -19,9 +19,26 @@ def _utcnow() -> datetime:
     return datetime.now(timezone.utc)
 
 
+_REQUIRED_CONFIG_KEYS = {"sources"}
+
+
+def _validate_config(cfg: Any, path: str) -> None:
+    """Raise ValueError with a clear message if config is missing required structure."""
+    if not isinstance(cfg, dict):
+        raise ValueError(f"Config at '{path}' must be a YAML mapping, got {type(cfg).__name__}")
+    missing = _REQUIRED_CONFIG_KEYS - cfg.keys()
+    if missing:
+        raise ValueError(f"Config at '{path}' is missing required keys: {missing}")
+    sources = cfg.get("sources", {})
+    if not isinstance(sources, dict) or not sources:
+        raise ValueError(f"Config at '{path}': 'sources' must be a non-empty mapping")
+
+
 def load_config(config_path: str) -> dict[str, Any]:
     with open(config_path) as f:
-        return yaml.safe_load(f)
+        cfg = yaml.safe_load(f)
+    _validate_config(cfg, config_path)
+    return cfg
 
 
 def _fetch_source(source: dict[str, Any], category: str, cutoff: datetime) -> list[NewsItem]:

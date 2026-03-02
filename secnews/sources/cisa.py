@@ -37,6 +37,9 @@ def fetch(
     try:
         resp = requests.get(url, timeout=_TIMEOUT, headers=_HEADERS)
         resp.raise_for_status()
+        ct = resp.headers.get("Content-Type", "")
+        if "json" not in ct:
+            logger.warning("CISA KEV: unexpected Content-Type '%s'", ct)
         data = resp.json()
     except Exception as exc:
         logger.warning("CISA KEV fetch failed: %s", exc)

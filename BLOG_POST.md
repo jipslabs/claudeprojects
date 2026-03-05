@@ -16,7 +16,7 @@ But every so often, a shift in tech is so profound that it stops feeling like a 
 
 ## A Quick Confession
 
-I'll be honest. I have more AI subscriptions than I need. ChatGPT, Claude, Cursor, Replit, AWS, Lovable. The usual suspects. But I'm an engineer at heart, so I would like to get my hands dirty and get a first hand experience when there is so much talk about a new tech. So I decided to put Claude Code to the test with a real challenge.
+I'll be honest. I have more AI subscriptions than I need. ChatGPT, Claude, Cursor, Replit, AWS, Lovable. The usual suspects. But I'm an engineer at heart, so I like to get my hands dirty and like to get a first hand experience when there is so much talk about a new tech. So I decided to put Claude Code to the test with a real challenge.
 
 
 ## The Challenge: A Threat Intel Service, Zero Code Written by Me

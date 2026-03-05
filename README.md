@@ -4,6 +4,93 @@
 
 ---
 
+## Clone & Test This Service
+
+Two paths depending on whether you have an Anthropic API key. **No subscription is required** for the core service.
+
+---
+
+### ✅ Option A — No Subscription Required (Heuristic Mode)
+
+Everything works out of the box. No API key, no account, no cost.
+
+```bash
+# 1. Clone the repo
+git clone https://github.com/jipslabs/claudeprojects.git
+cd claudeprojects/cyberbulletin
+
+# 2. Create a virtual environment (recommended)
+python3 -m venv .venv
+source .venv/bin/activate        # macOS/Linux
+# .venv\Scripts\activate         # Windows
+
+# 3. Install the package
+pip install -e .
+
+# 4. Confirm the CLI is working
+secnews --help
+
+# 5. Run the news digest (last 24 hours, all sources)
+secnews
+
+# 6. Run the 14-day cyber incident report
+secnews --incidents
+
+# 7. Run the unit tests (all 25 should pass)
+pip install -e ".[dev]"
+pytest
+```
+
+> **That's it.** The service will fetch from 15+ live sources, deduplicate, score, cluster, and render everything in your terminal. No API key or account needed.
+
+---
+
+### 🤖 Option B — With Anthropic API Key (AI-Enhanced Mode)
+
+Adds Claude Haiku-powered field extraction on top of everything in Option A. Dramatically improves accuracy for victim identification, impact assessment, and root cause analysis.
+
+**Cost: ~$0.40–$1.57/month** if run daily. Free tier credits are enough to test.
+
+```bash
+# 1–4. Follow all steps from Option A above, then continue:
+
+# 5. Install the AI package
+pip install -e ".[ai]"
+
+# 6. Get your API key at https://console.anthropic.com → API Keys
+#    Then set it in your terminal:
+export ANTHROPIC_API_KEY=sk-ant-...
+
+# 7. (Optional) Make it permanent so you don't re-enter it each session:
+echo 'export ANTHROPIC_API_KEY=sk-ant-...' >> ~/.zshrc
+source ~/.zshrc
+
+# 8. Run the AI-enhanced incident report
+secnews --incidents --ai
+
+# 9. Run the unit tests (all 25 should pass, including AI tests which are mocked)
+pytest
+```
+
+> **Note:** The `--ai` flag gracefully falls back to heuristic mode if the API key is missing or invalid. You'll see a clear warning in the terminal — the report still runs, just without Claude enrichment.
+
+---
+
+### Quick Command Reference
+
+| What you want | Command |
+|---|---|
+| 24h security news digest | `secnews` |
+| 14-day incident report (no API key) | `secnews --incidents` |
+| 14-day incident report (AI-enhanced) | `secnews --incidents --ai` |
+| Last 7 days, high severity only | `secnews --incidents --days 7 --min-score 65` |
+| Filter by company or attack type | `secnews --incidents --filter "ransomware"` |
+| Save report to a file | `secnews --incidents --ai > report.txt` |
+| Debug — show per-source fetch stats | `secnews --debug` |
+| Run tests | `pytest` |
+
+---
+
 ## What It Does
 
 `secnews` has two modes, each with optional AI enrichment:
@@ -15,47 +102,6 @@
 | **AI-Enhanced Incidents** | `secnews --incidents --ai` | Same as above, but incident fields extracted by **Claude Haiku** for significantly higher accuracy |
 
 ---
-
-## Quick Start
-
-### Requirements
-
-- Python 3.10 or higher
-- pip
-- Internet connection (fetches live feeds)
-
-### Install
-
-```bash
-# 1. Clone the repo
-git clone https://github.com/jipslabs/claudeprojects.git
-cd claudeprojects/cyberbulletin
-
-# 2. Install the package (core, no AI)
-pip install -e .
-
-# 2b. Install with AI support (adds the anthropic package)
-pip install -e ".[ai]"
-
-# 3. Confirm the CLI is available
-secnews --help
-```
-
-> **Tip:** Use a virtual environment to keep dependencies isolated:
-> ```bash
-> python3 -m venv .venv && source .venv/bin/activate
-> pip install -e ".[ai]"
-> ```
-
-### Set up AI enrichment (optional)
-
-```bash
-# Get your key at https://console.anthropic.com
-export ANTHROPIC_API_KEY=sk-ant-...
-
-# Add to your shell profile to persist it
-echo 'export ANTHROPIC_API_KEY=sk-ant-...' >> ~/.zshrc
-```
 
 ---
 
@@ -379,7 +425,7 @@ Add one of these lines (adjust the path from `which secnews`):
 cyberbulletin/
 ├── config.yaml                    # Sources, watchlist, scoring weights
 ├── pyproject.toml                 # Package metadata and CLI entry point
-├── requirements.txt               # Dependencies
+├── requirements-lock.txt          # Pinned dependency versions for reproducible installs
 │
 ├── secnews/
 │   ├── cli/
@@ -397,6 +443,7 @@ cyberbulletin/
 │   │   └── ai_enricher.py         # Claude Haiku AI enrichment (--ai mode)
 │   │
 │   └── sources/
+│       ├── __init__.py            # Shared http_get() wrapper + URL scheme validator
 │       ├── fetcher.py             # ThreadPoolExecutor parallel dispatcher
 │       ├── rss.py                 # RSS/Atom feed parser
 │       ├── nvd.py                 # NVD CVE API v2 ingester
@@ -405,7 +452,7 @@ cyberbulletin/
 │       ├── cisa.py                # CISA KEV JSON catalog ingester
 │       └── json_feed.py           # Generic JSON feed fallback
 │
-└── tests/
+└── tests/                         # 25 passing unit tests
     ├── test_dedup.py
     ├── test_scorer.py
     ├── test_cluster.py
@@ -420,9 +467,16 @@ cyberbulletin/
 
 ```bash
 pip install -e ".[dev]"
-pytest
-pytest -v           # verbose
-pytest --tb=short   # shorter tracebacks
+pytest               # 25 tests, all should pass
+pytest -v            # verbose output
+pytest --tb=short    # shorter tracebacks on failure
+```
+
+### Install exact pinned versions (reproducible builds)
+
+```bash
+pip install -r requirements-lock.txt
+pip install -e .
 ```
 
 ### Dependencies

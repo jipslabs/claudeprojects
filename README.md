@@ -1,6 +1,6 @@
-# secnews — Security News Aggregator & Digest
+# secnews — Security News Aggregator & Digest (a Threat Intel service)
 
-> A Python CLI tool that pulls from 15+ cybersecurity sources, deduplicates overlapping stories, clusters them by topic, and surfaces a ranked digest in your terminal — giving you a 5-minute briefing instead of an hour of tab-switching.
+> A Python CLI tool that pulls from 15+ cybersecurity sources, deduplicates overlapping stories, clusters them by topic, and surfaces a ranked digest in your terminal.
 
 ---
 

@@ -6,23 +6,22 @@
 
 ---
 
-In twenty years of working in tech, one pattern has never changed: engineers hate doing the same thing twice. The mantra is simple — anything you do more than three times should be automated. It's exactly why coding assistants have become one of the most-adopted AI use cases in the industry.
+In my years of working in tech, one pattern has never changed: engineers hate doing the same thing again and again. The mantra is simple, anything you do more than three times should be automated. It's exactly why coding assistants have become one of the most adopted AI use cases in the industry.
 
 But every so often, a shift in tech is so profound that it stops feeling like a better tool and starts feeling like a new era entirely. Mobile did it. IoT did it. Cloud did it. Each one fundamentally changed the rules of the game.
 
-**Claude Code feels like that moment. And honestly, it feels bigger.**
+**Claude Code and Claude Code Security feels like that moment. And honestly, it feels bigger.**
 
 ---
 
 ## A Quick Confession
 
-I'll be honest — I have more AI subscriptions than I need. ChatGPT, Claude, Cursor, Replit, AWS, Lovable. The usual suspects. But I'm an engineer at heart, and I don't trust things I haven't taken apart myself. So I decided to put Claude Code to the test with a real challenge, not a toy demo.
-
+I'll be honest. I have more AI subscriptions than I need. ChatGPT, Claude, Cursor, Replit, AWS, Lovable. The usual suspects. But I'm an engineer at heart, so I would like to get my hands dirty and get a first hand experience when there is so much talk about a new tech. So I decided to put Claude Code to the test with a real challenge.
 ---
 
 ## The Challenge: A Threat Intel Service, Zero Code Written by Me
 
-My goal was straightforward but non-trivial:
+My goal was straightforward:
 
 > **Build a functioning local threat intelligence service using Claude Code — no IDE, no manual coding, start to finish.**
 
@@ -40,11 +39,11 @@ The entire codebase is public: [github.com/jipslabs/claudeprojects](https://gith
 
 ### Step 1 — Write the PRD
 
-I used ChatGPT to draft a Product Requirements Document for the service, then tweaked it to match my goals. (No deep reason for using ChatGPT here — just familiarity. I could have used Claude just as easily.) I made a few changes around manual trigger vs. automated scheduling and confirmed Python as the primary language.
+I used ChatGPT to draft a Product Requirements Document for the service, then tweaked it to match my goals. (No deep reason for using ChatGPT here, just familiarity. I could have used Claude just as easily.) I made a few changes around manual trigger vs. automated scheduling and confirmed Python as the primary language.
 
 ### Step 2 — Hand It to Claude Code
 
-I opened Claude Code, pointed it at the PRD, and told it to build.
+I opened Claude Code, created a project, pointed it at the PRD, and told it to build.
 
 It showed me every major step it was taking in real time — decisions, trade-offs, file structure. When it was done, it had built and committed a complete project to my GitHub repo:
 
@@ -133,8 +132,6 @@ Under $2/month for daily AI-powered threat intelligence. I went with Anthropic.
 
 ## The Security Audit: Because I'm a Security Person
 
-A few minutes after getting the AI-enhanced service running, I caught myself. I had just built a security tool — and I hadn't reviewed the security of the code itself. That felt like a gap I couldn't ignore.
-
 I asked Claude Code to run a security scan of the repository using its Code Security feature.
 
 It came back with a categorized report:
@@ -147,7 +144,7 @@ It came back with a categorized report:
 
 Issues included zip slip vulnerabilities, prompt injection risks, missing redirect limits, and loose API error logging. Real findings, not noise.
 
-I asked Claude Code to fix them. It did. To verify, I ran the same code through **ChatGPT** and **Codex** independently — both came back clean after the fixes were applied.
+I asked Claude Code to fix them. It did. To verify, I ran the same code through **Codex** independently — both came back clean (ignored informational and lows) after the fixes were applied.
 
 Then I ran the security scan a second time with Claude Code. Clean report.
 
@@ -191,12 +188,12 @@ The headline question everyone is asking: *Will AI security tools end the cybers
 
 Honestly? Nobody knows for certain. But here's what I believe:
 
-As long as digital information and sensitive data exist, cybersecurity will exist. The players may change. The tools will definitely change. But the need won't disappear.
+As long as digital information and sensitive data exist, privacy is valued, regulations are implemented cybersecurity will exist. The players may change. The tools will definitely change. But the need won't disappear.
 
 **What I do think will happen over the next 5–10 years:**
 
 - **The productivity leap is real.** Something that would have taken a team weeks now takes hours to days. That changes the economics of every security product.
-- **The entire SDLC will reshape itself** to match the speed of AI-assisted development. Waterfall thinking won't survive this decade.
+- **The entire SDLC will reshape itself** to match the speed of AI-assisted development. Waterfall thinking won't survive this decade. Scrutiny on quality, functionality and security needs complete over-haul.
 - **Development costs will drop dramatically.** Companies won't pass all of those savings to customers — they'll expand their feature surface faster. You no longer need to be a multi-billion dollar company to build like one.
 - **Digitization will accelerate in healthcare, industrial, and transportation.** More digital surfaces mean more attack surface. More scope for cybersecurity — not less.
 - **Robotics will explode.** Cybersecurity and privacy will be mission-critical for physical systems in ways we're only beginning to think about.
@@ -206,15 +203,15 @@ As long as digital information and sensitive data exist, cybersecurity will exis
 
 ## Advice for Security Leaders
 
-**Stop underestimating AI in security.** As Reid Hastings writes in *Superagency*, start asking what can go right with AI, not just what can go wrong. I still hear fellow CISOs expressing doubt and a lack of trust. That skepticism, left unchecked, becomes a competitive liability.
+**Stop underestimating AI in security.** As Reid Hastings writes in *Superagency*, start asking what can go right with AI, not just what can go wrong. I still hear fellow CISOs expressing doubt and a lack of trust. Yes, there are risks and trust issues with AI. However, don't get hung up on those risks. Avoide misplaced paranoia and figure out how the world is solving those challenges. That skepticism, left unchecked, becomes a competitive liability. 
 
-**Be hands-on.** You need to know what's actually possible. Open these tools to your engineers and practitioners. Don't just allow it — require it.
+**Be hands-on.** You need to know what's actually possible. Open these tools to your engineers and practitioners. Don't leave it to good intentions, require it.
 
-**Be patient with the outcomes, but not with the adoption.** AI is the fastest path to demonstrating value that I've seen in two decades. Give your teams the freedom to explore it.
+**Be patient with the outcomes, but not with the adoption.** AI is the fastest path to demonstrating value that I've seen in two decades. Give your teams the freedom to explore it. It's okay if you don't have strong signals to demonstrate ROI just yet.
 
 ---
 
-## Advice for Anyone Building a Career in Tech
+## Advice for Anyone Building a Career in Cybersecurity or Tech
 
 Build something every day. Even if no one is paying you. Even if it's small. Publish it proudly.
 

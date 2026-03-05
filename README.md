@@ -17,7 +17,7 @@ Everything works out of the box. No API key, no account, no cost.
 ```bash
 # 1. Clone the repo
 git clone https://github.com/jipslabs/claudeprojects.git
-cd claudeprojects/cyberbulletin
+cd claudeprojects/threatintel
 
 # 2. Create a virtual environment (recommended)
 python3 -m venv .venv
@@ -422,7 +422,7 @@ Add one of these lines (adjust the path from `which secnews`):
 ## Project Structure
 
 ```
-cyberbulletin/
+threatintel/
 ├── config.yaml                    # Sources, watchlist, scoring weights
 ├── pyproject.toml                 # Package metadata and CLI entry point
 ├── requirements-lock.txt          # Pinned dependency versions for reproducible installs

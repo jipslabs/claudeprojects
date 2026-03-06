@@ -130,7 +130,7 @@ Under $2/month for daily AI-powered threat intelligence. I went with Anthropic.
 
 ---
 
-## The Security Audit: Because I'm a Security Person
+## The Security Scan: Because I'm a Security Person
 
 I asked Claude Code to run a security scan of the repository using its Code Security feature.
 

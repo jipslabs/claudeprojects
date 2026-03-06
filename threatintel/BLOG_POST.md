@@ -70,7 +70,7 @@ cyberbulletin/
 │       └── json_feed.py # Generic JSON fallback
 └── tests/               # 25 passing unit tests
 ```
-
+(the above structure may not match with the final structure as I have renamed a few things)
 ### Step 3 — Run It (Without Following the Instructions)
 
 Claude Code suggested running `pip install -e .` and then `secnews`.

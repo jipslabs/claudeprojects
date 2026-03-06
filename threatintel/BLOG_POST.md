@@ -43,7 +43,7 @@ I used ChatGPT to draft a Product Requirements Document for the service, then tw
 
 ### Step 2 — Hand It to Claude Code
 
-I opened Claude Code, created a project, pointed it at the PRD, and told it to build.
+I opened Claude Code, created a project, pointed it at the PRD, and told it to build. I have been using Claude Code command line tool for a while so didn't need any setup here. 
 
 It showed me every major step it was taking in real time — decisions, trade-offs, file structure. When it was done, it had built and committed a complete project to my GitHub repo:
 

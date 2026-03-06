@@ -181,6 +181,14 @@ With the full AI-enhanced stack running, the service surfaced **31 incidents** w
 
 ---
 
+## Gaps in this service
+
+This is by no means an enterprise ready product. There are many additional layers required before a service like this can be considered enterprise ready.
+
+For example, areas such as user identity and access management, payment and billing infrastructure, integration with non-public intelligence sources, deeper threat research capabilities, and enterprise-specific context would all need to be incorporated. These elements are essential for building a robust and reliable service that enterprises can trust.
+
+That said, the foundation is already there. What remains is largely a matter of human imagination combined with thoughtful design and the ability to guide AI through the right prompts to build and integrate these additional layers. 
+
 ## What This Actually Means for Cybersecurity
 
 The headline question everyone is asking: *Will AI security tools end the cybersecurity industry?*

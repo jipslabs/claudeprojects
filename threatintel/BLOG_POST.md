@@ -204,7 +204,6 @@ As long as digital information and sensitive data exist, privacy is valued, regu
 - **Development costs will drop dramatically.** Companies won't pass all of those savings to customers, they'll expand their feature set faster. Expand to other verticals quicker. You no longer need to be a multi-billion dollar company to build like one.
 - **Digitization will accelerate in healthcare, industrial, and transportation.** More digital surfaces mean more attack surface. More scope for cybersecurity — not less.
 - **Robotics will explode.** Cybersecurity and privacy will be mission-critical for physical systems in ways we're only beginning to think about.
-- **Consolidation is coming.** M&A activity for point solutions will accelerate. Siloed tools that don't plug into AI-native workflows will become acquisition targets or irrelevant.
 - **Data will continue to be a significant differnetiator.** If a non cyber company can build a top notch LLM model, nothing prevents a top cyber company to do the same. The cyber companies will have a massive benefit of enterprise data that they can leverage. They don't have to train their models with this data. They can still provide custom features to their customers. .
 
 

@@ -178,7 +178,6 @@ With the full AI-enhanced stack running, the service surfaced **31 incidents** w
   Source           CISA Known Exploited Vulnerabilities
 ```
 
-Color-coded borders (red = no fix, blue = patch available, yellow = unknown), per-item AI vs. heuristic badges, and a structured five-field breakdown for every incident.
 
 ---
 
@@ -186,18 +185,20 @@ Color-coded borders (red = no fix, blue = patch available, yellow = unknown), pe
 
 The headline question everyone is asking: *Will AI security tools end the cybersecurity industry?*
 
-Honestly? Nobody knows for certain. But here's what I believe:
+Honestly? Nobody knows for certain and it doesn't matter. Every business owner remains paranoid regardless. Here's what I believe:
 
 As long as digital information and sensitive data exist, privacy is valued, regulations are implemented cybersecurity will exist. The players may change. The tools will definitely change. But the need won't disappear.
 
-**What I do think will happen over the next 5–10 years:**
+**What I do think will happen over the years:**
 
 - **The productivity leap is real.** Something that would have taken a team weeks now takes hours to days. That changes the economics of every security product.
-- **The entire SDLC will reshape itself** to match the speed of AI-assisted development. Waterfall thinking won't survive this decade. Scrutiny on quality, functionality and security needs complete over-haul.
-- **Development costs will drop dramatically.** Companies won't pass all of those savings to customers — they'll expand their feature surface faster. You no longer need to be a multi-billion dollar company to build like one.
+- **The entire SDLC will reshape itself** to match the speed of AI-assisted development. Waterfall or the traditional agile development thinking won't survive. Scrutiny on quality, functionality and security needs complete over-haul.
+- **Development costs will drop dramatically.** Companies won't pass all of those savings to customers, they'll expand their feature set faster. Expand to other verticals quicker. You no longer need to be a multi-billion dollar company to build like one.
 - **Digitization will accelerate in healthcare, industrial, and transportation.** More digital surfaces mean more attack surface. More scope for cybersecurity — not less.
 - **Robotics will explode.** Cybersecurity and privacy will be mission-critical for physical systems in ways we're only beginning to think about.
 - **Consolidation is coming.** M&A activity for point solutions will accelerate. Siloed tools that don't plug into AI-native workflows will become acquisition targets or irrelevant.
+- **Data will continue to be a significant differnetiator.** If a non cyber company can build a top notch LLM model, nothing prevents a top cyber company to do the same. The cyber companies will have a massive benefit of enterprise data that they can leverage. They don't have to train their models with this data. They can still provide custom features to their customers. .
+
 
 ---
 
@@ -211,13 +212,23 @@ As long as digital information and sensitive data exist, privacy is valued, regu
 
 ---
 
-## Advice for Anyone Building a Career in Cybersecurity or Tech
+## Advice for Anyone wanting to building a Career in Cybersecurity or Tech
 
 Build something every day. Even if no one is paying you. Even if it's small. Publish it proudly.
 
-Every resume should now carry a link to a GitHub that demonstrates what you've built using AI tools and what real problem it solves. If that work is tailored to the company and the business you're applying to, it will be more influential than any certification or degree.
+Every resume should now carry a link to a GitHub or a working app that demonstrates what you've built using AI tools and what real problem it solves. If that work is tailored to the company and the business you're applying to, it will be more influential than any certification or degree.
 
-The bar for demonstrating capability has never been lower. The bar for standing out has never been higher. Those two facts point in the same direction: **build, ship, show your work.**
+The bar for demonstrating capability has never been lower. The bar for standing out has never been higher. Those two facts point in the same direction: **build, ship, show your work and iterate**
+
+## Conclusion
+
+The breakthroughs we see today in technology and cybersecurity are not magic. They are the result of decades of progress, built by countless engineers, researchers, and builders pushing the boundaries of what is possible.
+
+I feel fortunate to have witnessed and been part of some of these moments of transformation. I started my career writing programs in C (Dennis Ritchie’s The C Programming Language still sits on my bookshelf). From those early days of system level programming to today’s world of AI-driven systems, the pace of innovation has been remarkable.
+
+The future will continue to evolve in ways we cannot fully predict, as it always has. But moments like this create opportunity. Instead of resisting change, we should strive to understand it, challenge it, shape it, and ultimately ride the wave of innovation.
+
+After all, there are still far too many problems in the world waiting to be solved.
 
 ---
 

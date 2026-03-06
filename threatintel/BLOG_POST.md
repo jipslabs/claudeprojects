@@ -181,6 +181,11 @@ With the full AI-enhanced stack running, the service surfaced **31 incidents** w
 
 ---
 
+## Time spent on this project
+
+I did not track the time from start to finish since it was a late night and weekend learning project :). However, I don't think I spent more than 6-8 hours of total time including writing this blog. Where I spent the most of time.
+
+
 ## Gaps in this service
 
 This is by no means an enterprise ready product. There are many additional layers required before a service like this can be considered enterprise ready.

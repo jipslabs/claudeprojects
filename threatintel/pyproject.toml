@@ -9,6 +9,9 @@ description = "Security News Aggregator & Digest — a CLI tool for daily threat
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
+authors = [
+    { name = "Jiphun Satapathy" },
+]
 keywords = ["security", "threat-intel", "CVE", "news", "cli", "cybersecurity"]
 classifiers = [
     "Development Status :: 4 - Beta",

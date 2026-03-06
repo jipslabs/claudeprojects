@@ -2,6 +2,8 @@
 
 > A Python CLI tool that pulls from 15+ cybersecurity sources, deduplicates overlapping stories, clusters them by topic, and surfaces a ranked digest in your terminal.
 
+*Built by [Jiphun Satapathy](https://github.com/jipslabs)*
+
 ---
 
 ## Clone & Test This Service

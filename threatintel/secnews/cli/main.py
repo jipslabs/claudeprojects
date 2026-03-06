@@ -1,5 +1,7 @@
 """CLI entrypoint for secnews."""
 
+__author__ = "Jiphun Satapathy"
+
 from __future__ import annotations
 
 import argparse

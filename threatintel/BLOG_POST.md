@@ -1,4 +1,4 @@
-# I Built a Threat Intelligence Service Without Writing a Single Line of Code
+# Built a Threat Intelligence Service Without Writing a Single Line of Code
 
 **OPINION | TECHNOLOGY & CYBERSECURITY**
 

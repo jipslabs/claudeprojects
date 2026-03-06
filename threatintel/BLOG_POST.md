@@ -1,4 +1,4 @@
-# I Built a Threat Intelligence Service Without Writing a Single Line of Code — Then Asked AI to Audit It
+# I Built a Threat Intelligence Service Without Writing a Single Line of Code
 
 **OPINION | TECHNOLOGY & CYBERSECURITY**
 

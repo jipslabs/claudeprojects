@@ -183,7 +183,7 @@ With the full AI-enhanced stack running, the service surfaced **31 incidents** w
 
 ## Time spent on this project
 
-I did not track the time from start to finish since it was a late night and weekend learning project :). However, I don't think I spent more than 6-8 hours of total time including writing this blog. Where I spent the most of time.
+I did not track the time from start to finish since it was a late night and weekend learning project :). However, I don't think I spent more than 6-8 hours of total time including writing this blog. Where I spent the most time.
 
 
 ## Gaps in this service
@@ -200,7 +200,7 @@ The headline question everyone is asking: *Will AI security tools end the cybers
 
 Honestly? Nobody knows for certain and it doesn't matter. Every business owner remains paranoid regardless. Here's what I believe:
 
-As long as digital information and sensitive data exist, privacy is valued, regulations are implemented cybersecurity will exist. The players may change. The tools will definitely change. But the need won't disappear.
+As long as digital information and sensitive data exist, privacy is valued, regulations are implemented, cybersecurity will exist. The players may change. The tools will definitely change. But the need won't disappear.
 
 **What I do think will happen over the years:**
 
@@ -209,14 +209,14 @@ As long as digital information and sensitive data exist, privacy is valued, regu
 - **Development costs will drop dramatically.** Companies won't pass all of those savings to customers, they'll expand their feature set faster. Expand to other verticals quicker. You no longer need to be a multi-billion dollar company to build like one.
 - **Digitization will accelerate in healthcare, industrial, and transportation.** More digital surfaces mean more attack surface. More scope for cybersecurity — not less.
 - **Robotics will explode.** Cybersecurity and privacy will be mission-critical for physical systems in ways we're only beginning to think about.
-- **Data will continue to be a significant differnetiator.** If a non cyber company can build a top notch LLM model, nothing prevents a top cyber company to do the same. The cyber companies will have a massive benefit of enterprise data that they can leverage. They don't have to train their models with this data. They can still provide custom features to their customers. .
+- **Data will continue to be a significant differentiator.** If a non-cyber company can build a top notch LLM model, nothing prevents a top cyber company to do the same. The cyber companies will have a massive benefit of enterprise data that they can leverage. They don't have to train their models with this data. They can still provide custom features to their customers. .
 
 
 ---
 
 ## Advice for Security Leaders
 
-**Stop underestimating AI in security.** As Reid Hastings writes in *Superagency*, start asking what can go right with AI, not just what can go wrong. I still hear fellow CISOs expressing doubt and a lack of trust. Yes, there are risks and trust issues with AI. However, don't get hung up on those risks. Avoide misplaced paranoia and figure out how the world is solving those challenges. That skepticism, left unchecked, becomes a competitive liability. 
+**Stop underestimating AI in security.** As Reid Hastings writes in *Superagency*, start asking what can go right with AI, not just what can go wrong. I still hear fellow CISOs expressing doubt and a lack of trust. Yes, there are risks and trust issues with AI. However, don't get hung up on those risks. Avoid misplaced paranoia and figure out how the world is solving those challenges. That skepticism, left unchecked, becomes a competitive liability. 
 
 **Be hands-on.** You need to know what's actually possible. Open these tools to your engineers and practitioners. Don't leave it to good intentions, require it.
 
@@ -224,7 +224,7 @@ As long as digital information and sensitive data exist, privacy is valued, regu
 
 ---
 
-## Advice for Anyone wanting to building a Career in Cybersecurity or Tech
+## Advice for Anyone wanting to build a Career in Cybersecurity or Tech
 
 Build something every day. Even if no one is paying you. Even if it's small. Publish it proudly.
 
